@@ -1,3 +1,12 @@
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+# INCLUSAO DO BD
+Foram feitas todas as substituições necessárias, atualizando o sistema para integracao com Banco de Dados.
+
+O que não foi feito:
+Equalização das mensagens e tratamentos de erro em todas as classes, como por exemplo: se é dado a opção de selecionar (1) para finalizar ou (2) para cancelar, não há controle se algo for digitado fora dessas opções. Isso são erros que foram herdados do sistema original.
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 # PROJETO BILTIFUL
 
 Para iniciar o executável a primeira coisa que deve ser feita é definir o projeto como inicialização. Após está definição executar com F5 ou Ctrl + F5.
