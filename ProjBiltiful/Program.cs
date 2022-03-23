@@ -3,7 +3,6 @@ using System.IO;
 using VendasProdutos;
 using CadastrosBasicos;
 using ComprasMateriasPrimas;
-using CadastrosBasicos.ManipulaArquivos;
 using ProducaoCosmeticos;
 using System.Globalization;
 

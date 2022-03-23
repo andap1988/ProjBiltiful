@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CadastrosBasicos;
-using CadastrosBasicos.ManipulaArquivos;
 
 namespace ComprasMateriasPrimas
 {
@@ -177,14 +176,34 @@ namespace ComprasMateriasPrimas
             compra.Fornecedor = cnpjFornecedor;
             itens.ForEach(item => valorTotal += item.TotalItem);
 
-            bdCompra.GravarItemCompra(itens);
-            bdCompra.GravarCompra(fornecedor.CNPJ, compra.DataCompra, true, compra.Id, valorTotal);
-            itens.ForEach(item =>
-                bdCadastro.EditarMateriaPrima(int.Parse(item.MateriaPrima), null, compra.DataCompra.ToString("yyyy/MM/dd").Replace("/", "-")));
+            Console.WriteLine("Gostaria de finalizar a compra?");
+            Console.WriteLine("1. Finalizar\n2. Cancelar registro");
 
-            Console.WriteLine(" Compra concluida.");
-            Console.WriteLine(" Pressione ENTER para voltar...");
-            Console.ReadKey();
+            Console.Write("Resposta: "); 
+            int escolha = int.Parse(Console.ReadLine());
+
+            if (escolha == 1)
+            {
+                bdCompra.GravarItemCompra(itens);
+                bdCompra.GravarCompra(fornecedor.CNPJ, compra.DataCompra, true, compra.Id, valorTotal);
+                itens.ForEach(item =>
+                    bdCadastro.EditarMateriaPrima(int.Parse(item.MateriaPrima), null, compra.DataCompra.ToString("yyyy/MM/dd").Replace("/", "-")));
+
+                Console.WriteLine(" Compra concluida.");
+                Console.WriteLine(" Pressione ENTER para voltar...");
+                Console.ReadKey();
+            }
+            else
+            {
+                bdCompra.RemoverCompra(compra.Id);
+
+                Console.WriteLine("O registro foi cancelado com sucesso!");
+                Console.ReadKey();
+                Console.WriteLine("\n\n\t Pressione ENTER para continuar...");
+                Console.Clear();
+            }
+
+            
         }
 
         public static void Localizar()

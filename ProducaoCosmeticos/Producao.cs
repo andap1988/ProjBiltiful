@@ -27,11 +27,7 @@ namespace ProducaoCosmeticos
             Contador = 1;
         }
 
-        public Producao()
-        {
-            Contador = 1;
-
-        }
+        public Producao() { }
 
         #endregion
 
@@ -43,7 +39,6 @@ namespace ProducaoCosmeticos
 
             do
             {
-
                 Console.Clear();
                 Console.WriteLine("\n=============== PRODUÇÃO ===============");
                 Console.WriteLine("1. Cadastrar uma produção");
@@ -66,16 +61,35 @@ namespace ProducaoCosmeticos
                         else
                         {
                             Console.WriteLine("Não ha produtos ou materias primas cadastradas. Favor verificar!");
+                            Console.WriteLine("\n Pressione ENTER para voltar ao menu.");
                             Console.ReadKey();
                         }
                         break;
                     case "2":
-                        Console.Clear();
-                        Localizar();
+                        if (bdProducao.TemProducao())
+                        {
+                            Console.Clear();
+                            Localizar();
+                        }
+                        else
+                        {
+                            Console.WriteLine(" Não ha producao para exibir");
+                            Console.WriteLine("\n Pressione ENTER para voltar ao menu.");
+                            Console.ReadKey();
+                        }
                         break;
                     case "3":
-                        ImprimirPorRegistro();
-                        Console.Clear();
+                        if (bdProducao.TemProducao())
+                        {
+                            Console.Clear();
+                            ImprimirProducao();
+                        }
+                        else
+                        {
+                            Console.WriteLine(" Não ha producao para exibir");
+                            Console.WriteLine("\n Pressione ENTER para voltar ao menu.");
+                            Console.ReadKey();
+                        }
                         break;
                     default:
                         Console.WriteLine("\n Opção inválida.");
@@ -86,14 +100,6 @@ namespace ProducaoCosmeticos
 
             } while (escolha != "0");
         }
-
-
-        #region Métodos
-
-        List<Producao> listaProducao = new List<Producao>();
-
-        ItemProducao itemProducao = new ItemProducao();
-
 
         public void Cadastrar()
         {
@@ -240,6 +246,8 @@ namespace ProducaoCosmeticos
             }
             else
             {
+                bdProducao.RemoverProducao(int.Parse(producao.Id));
+
                 Console.WriteLine("O registro foi cancelado com sucesso!");
                 Console.ReadKey();
                 Console.WriteLine("\n\n\t Pressione ENTER para continuar...");
@@ -292,316 +300,128 @@ namespace ProducaoCosmeticos
             }
         }
 
-        public void ImprimirPorRegistro()
+        public static void ImprimirProducao()
         {
+            BDProducao bdProducao = new();
 
+            Console.Clear();
 
-            int escolha, i = 0;
+            List<Producao> Producao = bdProducao.ListarProducoes();
 
-            if (listaProducao.Count == 0)
+            int posicao = 0, max = Producao.Count;
+            string escolha = "0", msgInicial, msgSaida;
+
+            msgInicial = $"\n ...:: Lista de Producao ::...\n";
+            msgSaida = " Caso queira voltar ao menu anterior, basta digitar 9 e pressionar ENTER\n";
+
+            Console.Clear();
+            Console.WriteLine(msgInicial);
+            Console.WriteLine(msgSaida);
+            Console.WriteLine(" -------------------------------------------------------------------------\n");
+            Console.WriteLine($" 1º Registro\n");
+            DesenharDados(Producao.First());
+
+            do
             {
-                Console.Clear();
-                Console.WriteLine("Não existe nenhum registro de produção ainda!");
-                Console.ReadKey();
-                Console.WriteLine("\n\n\t Pressione ENTER para continuar...");
+                Console.WriteLine("\n 1 - Primeiro / 2 - Anterior / 3 - Proximo / 4 - Ultimo\n");
+                Console.Write(" Escolha: ");
+                escolha = Console.ReadLine();
 
-            }
-            else
-            {
-                Console.Clear();
-                Console.WriteLine(listaProducao[i].ToString());
-                BuscarItemProducao(listaProducao[i].Id);
-
-                do
+                if (escolha != "1" && escolha != "2" && escolha != "3" && escolha != "4" && escolha != "9")
                 {
-
-
-                    Console.WriteLine("\nO que você gostaria de fazer?\n");
-                    Console.WriteLine("1. Ir para o próximo");
-                    Console.WriteLine("2. Ir para o anterior");
-                    Console.WriteLine("3. Ir para o primeiro");
-                    Console.WriteLine("4. Ir para o ultimo");
-                    Console.WriteLine("0. Sair\n");
-
-                    Console.Write("Opção: "); escolha = int.Parse(Console.ReadLine());
-
-                    Console.WriteLine("\n\n\t Pressione ENTER para continuar...");
+                    Console.WriteLine("\n xxxx Opcao invalida.");
+                    Console.WriteLine("\n Pressione ENTER para voltar...\n");
                     Console.ReadKey();
-                    Console.Clear();
-
-                    switch (escolha)
+                }
+                else if (escolha == "9")
+                    return;
+                else
+                {
+                    if (escolha == "1")
                     {
-                        case 1:
-
-                            if (i + 1 < listaProducao.Count && listaProducao[i + 1] != null)
-                            {
-
-                                Console.WriteLine(listaProducao[i + 1].ToString());
-                                BuscarItemProducao(listaProducao[i + 1].Id);
-                                i++;
-
-                            }
-                            else
-                                Console.WriteLine("Não tem um próximo na lista de produção!");
-
-                            break;
-                        case 2:
-
-                            if (i > 0 && listaProducao[i - 1] != null)
-                            {
-
-                                Console.WriteLine(listaProducao[i - 1].ToString());
-                                BuscarItemProducao(listaProducao[i - 1].Id);
-
-                                i--;
-
-                            }
-                            else
-                                Console.WriteLine("Não tem um anterior na lista de produção!");
-
-                            break;
-                        case 3:
-
-                            Console.WriteLine(listaProducao[0].ToString());
-                            BuscarItemProducao(listaProducao[0].Id);
-
-                            break;
-                        case 4:
-
-                            Console.WriteLine(listaProducao[listaProducao.Count - 1].ToString());
-                            BuscarItemProducao(listaProducao[listaProducao.Count - 1].Id);
-
-                            break;
-                        case 5:
-
-                            break;
-                    }
-                }
-                while (escolha != 0);
-            }
-        }
-
-        public void SalvarArquivo(string producao)
-        {
-
-            string caminhoFinal = Path.Combine(Directory.GetCurrentDirectory(), "DataBase");
-            Directory.CreateDirectory(caminhoFinal);
-
-            string arquivoFinal = Path.Combine(caminhoFinal, "Producao.dat");
-
-            if (!File.Exists(arquivoFinal))
-            {
-
-                try
-                {
-
-                    using (StreamWriter sw = new StreamWriter(arquivoFinal))
-                    {
-
-                        sw.WriteLine(producao);
-                        sw.Close();
-
-                    }
-
-                }
-                catch
-                {
-
-                    Console.WriteLine("Algo deu errado...");
-
-                }
-
-            }
-            else
-            {
-
-                try
-                {
-
-                    using (StreamWriter sw = new StreamWriter(arquivoFinal, append: true))
-                    {
-
-                        sw.WriteLine(producao);
-                        sw.Close();
-
-                    }
-
-                }
-                catch
-                {
-
-                    Console.WriteLine("Algo deu errado...");
-
-                }
-
-            }
-
-
-
-        }
-
-        public string BuscarCodigo(string codigo)
-        {
-
-
-            string caminhoFinal = Path.Combine(Directory.GetCurrentDirectory(), "DataBase");
-            Directory.CreateDirectory(caminhoFinal);
-
-            string arquivoFinal = Path.Combine(caminhoFinal, "Producao.dat");
-
-            string cbarras = null;
-
-            try
-            {
-
-                string linha = null;
-
-                using (StreamReader sr = new StreamReader(arquivoFinal))
-                {
-
-                    linha = sr.ReadLine();
-
-
-                    do
-                    {
-
-                        if (linha.Substring(0, 13) == codigo)
+                        if (posicao == 0)
+                            Console.WriteLine("\n xxxx Ja estamos no primeiro registro.");
+                        else
                         {
-
-                            cbarras = linha.Substring(0, 13);
-
+                            Console.Clear();
+                            Console.WriteLine(msgInicial);
+                            Console.WriteLine(msgSaida);
+                            Console.WriteLine(" -------------------------------------------------------------------------\n");
+                            Console.WriteLine($" 1º Registro\n");
+                            DesenharDados(Producao.First());
+                            posicao = 0;
                         }
-                        linha = sr.ReadLine();
-
                     }
-                    while (linha != null);
-
-                    sr.Close();
-
-                }
-
-            }
-            catch
-            {
-
-                Console.WriteLine("Algo deu errado...");
-
-            }
-
-            return cbarras;
-
-        }
-        /*
-        public void LerArquivo()
-        {
-
-            string caminhoInicial = Directory.GetCurrentDirectory();
-
-            string caminhoFinal = Path.Combine(Directory.GetCurrentDirectory(), "DataBase");
-            Directory.CreateDirectory(caminhoFinal);
-
-            string arquivoFinal = Path.Combine(caminhoFinal, "Producao.dat");
-
-            try
-            {
-
-                string linha = null;
-
-                using (StreamReader sr = new StreamReader(arquivoFinal))
-                {
-
-                    linha = sr.ReadLine();
-
-
-                    do
+                    else if (escolha == "2")
                     {
-
-                        Id = linha.Substring(0, 5);
-                        DataProducao = linha.Substring(5, 8).Insert(2, "/").Insert(5, "/");
-                        Produto = linha.Substring(13, 13);
-                        Quantidade = float.Parse(linha.Substring(26, 5));
-
-                        Producao producao = new Producao(Id, DataProducao, Produto, Quantidade);
-
-                        listaProducao.Add(producao);
-                        Contador++;
-
-
-                        linha = sr.ReadLine();
-
-                    }
-                    while (linha != null);
-
-                    sr.Close();
-
-                }
-            }
-            catch
-            {
-
-            }
-        }
-        */
-        public void BuscarItemProducao(string codigoproducao)
-        {
-            string caminhoInicial = Directory.GetCurrentDirectory();
-
-            string caminhoFinal = Path.Combine(Directory.GetCurrentDirectory(), "DataBase");
-            Directory.CreateDirectory(caminhoFinal);
-
-            string arquivoItemProducao = Path.Combine(caminhoFinal, "ItemProducao.dat");
-
-            List<string> listaItemProducao = new();
-
-            try
-            {
-
-                string linha = null;
-
-                using (StreamReader sr = new StreamReader(arquivoItemProducao))
-                {
-
-                    linha = sr.ReadLine();
-
-
-                    do
-                    {
-
-                        if (codigoproducao == linha.Substring(0, 5))
+                        if (posicao == 0)
+                            Console.WriteLine("\n xxxx Nao ha registro anterior.");
+                        else
                         {
-
-                            listaItemProducao.Add(linha.Substring(13, 11));
-
+                            posicao--;
+                            Console.Clear();
+                            Console.WriteLine(msgInicial);
+                            Console.WriteLine(msgSaida);
+                            Console.WriteLine(" -------------------------------------------------------------------------\n");
+                            Console.WriteLine($" {posicao + 1}º Registro\n");
+                            DesenharDados(Producao[posicao]);
                         }
-
-
-
-                        linha = sr.ReadLine();
-
                     }
-                    while (linha != null);
-
-
-                    Console.WriteLine("\nLista de matérias primas utilizadas: \n");
-
-                    listaItemProducao.ForEach(item =>
+                    else if (escolha == "3")
                     {
-                        float qntdMatPrima = float.Parse(item.Substring(6, 5));
-
-                        Console.WriteLine("Código da matéria prima: " + item.Substring(0, 6));
-                        Console.WriteLine("Quantidade utilizada da matéria prima: " + qntdMatPrima.ToString("000.#0").TrimStart('0') + "\n");
-
-                    });
-
-                    Console.WriteLine("\n\n *********************************************");
-
+                        if (posicao == Producao.Count - 1)
+                            Console.WriteLine("\n xxxx Nao ha proximo registro.");
+                        else
+                        {
+                            posicao++;
+                            Console.Clear();
+                            Console.WriteLine(msgInicial);
+                            Console.WriteLine(msgSaida);
+                            Console.WriteLine(" -------------------------------------------------------------------------\n");
+                            Console.WriteLine($" {posicao + 1}º Registro\n");
+                            DesenharDados(Producao[posicao]);
+                        }
+                    }
+                    else if (escolha == "4")
+                    {
+                        if (posicao == Producao.Count - 1)
+                            Console.WriteLine("\n xxxx Ja estamos no ultimo registro.");
+                        else
+                        {
+                            Console.Clear();
+                            Console.WriteLine(msgInicial);
+                            Console.WriteLine(msgSaida);
+                            Console.WriteLine(" -------------------------------------------------------------------------\n");
+                            Console.WriteLine($" {Producao.Count}º Registro (ultimo registro)\n");
+                            DesenharDados(Producao.Last());
+                            posicao = Producao.Count - 1;
+                        }
+                    }
                 }
-            }
-            catch
+            } while (escolha != "9");
+        }
+
+        public static void DesenharDados(Producao producao)
+        {
+            List<ItemProducao> itensProducao = null;
+            BDProducao bdProducao = new();
+
+            Console.WriteLine("\n---------------------------------------\n");
+            Console.WriteLine($" Codigo:          {producao.Id:0000}");
+            Console.WriteLine($" Data Producao:   {producao.DataProducao:dd/MM/yyyy}");
+            Console.WriteLine($" Produto:         {producao.Produto}");
+            Console.WriteLine($" Quantidade:      {producao.Quantidade}");
+            Console.WriteLine("\n---------------------------------------\n");
+
+            itensProducao = bdProducao.ImprimirItens(int.Parse(producao.Id));
+
+            Console.WriteLine("\n Cod.       Materia-prima            Qt.   ");
+            Console.WriteLine(" ----------------------------------------------\n");
+            itensProducao.ForEach(item =>
             {
-
-            }
-
+                Console.WriteLine($" {item.Id:0000}          {item.MateriaPrima}           {item.QuantidadeMateriaPrima,8}");
+            });
+            Console.WriteLine("\n\n                               --/-------/--\n");
         }
 
         public override string ToString()
@@ -614,7 +434,5 @@ namespace ProducaoCosmeticos
                 + "\nQuantidade: " + Quantidade.ToString("000.#0").TrimStart('0');
 
         }
-
-        #endregion
     }
 }

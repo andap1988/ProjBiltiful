@@ -292,5 +292,27 @@ namespace ComprasMateriasPrimas
 
             return itens;
         }
+
+        public void RemoverCompra(int id)
+        {
+            SqlConnection connection = new(ConnString);
+
+            string sql = $"DELETE from Compra WHERE ID = {id};";
+
+            try
+            {
+                using (connection)
+                {
+                    connection.Open();
+                    SqlCommand sqlCommand = new(sql, connection);
+                    sqlCommand.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("EX -> " + ex.Message);
+            }
+        }
     }
 }

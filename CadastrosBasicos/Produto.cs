@@ -51,10 +51,10 @@ namespace CadastrosBasicos
             {
                 Console.Clear();
                 Console.WriteLine("\n=============== PRODUTO ===============");
-                Console.WriteLine("1. Cadastrar Produto - feito");
-                Console.WriteLine("2. Localizar Produto - feito");
-                Console.WriteLine("3. Imprimir Produtos - feito");
-                Console.WriteLine("4. Alterar Situacao do Produto - feito");
+                Console.WriteLine("1. Cadastrar Produto");
+                Console.WriteLine("2. Localizar Produto");
+                Console.WriteLine("3. Imprimir Produtos");
+                Console.WriteLine("4. Alterar Situacao do Produto");
                 Console.WriteLine("---------------------------------------");
                 Console.WriteLine("0. Voltar ao menu anterior");
                 Console.Write("\nEscolha: ");
@@ -138,7 +138,6 @@ namespace CadastrosBasicos
                     }
 
                 } while (cod.Length != 13 || produto != null);
-
 
                 do
                 {

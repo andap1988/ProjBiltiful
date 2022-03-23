@@ -248,5 +248,73 @@ namespace ProducaoCosmeticos
 
             return flag;
         }
+
+        public List<Producao> ListarProducoes()
+        {
+            SqlConnection connection = new(ConnString);
+
+            List<Producao> producoes = new();
+            Producao producao;
+
+            int codigo = 0;
+            string dataProducao = "", produto = "";
+            decimal qt = 0;
+
+            string sql = $"SELECT * from Producao;";
+
+            try
+            {
+                connection.Open();
+                using (SqlCommand command = new(sql, connection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            codigo = int.Parse(reader.GetValue(0).ToString());
+                            dataProducao = reader.GetDateTime(1).ToString("dd/MM/yyyy");
+                            produto = reader.GetValue(2).ToString();
+                            qt = reader.GetDecimal(3);
+
+                            producao = new();
+                            producao.Id = codigo.ToString().PadLeft(5, '0');
+                            producao.DataProducao = dataProducao;
+                            producao.Produto = produto;
+                            producao.Quantidade = qt;
+                            producoes.Add(producao);
+                        }
+                    }
+                }
+                connection.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("EX -> " + ex.Message);
+            }
+
+            return producoes;
+        }
+
+        public void RemoverProducao(int id)
+        {
+            SqlConnection connection = new(ConnString);
+
+            string sql = $"DELETE from Producao WHERE ID = {id};";
+
+            try
+            {
+                using (connection)
+                {
+                    connection.Open();
+                    SqlCommand sqlCommand = new(sql, connection);
+                    sqlCommand.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("EX -> " + ex.Message);
+            }
+        }
     }
 }

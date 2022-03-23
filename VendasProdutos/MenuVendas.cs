@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CadastrosBasicos;
-using CadastrosBasicos.ManipulaArquivos;
 
 namespace VendasProdutos
 {
@@ -13,7 +12,6 @@ namespace VendasProdutos
     {
         public static void SubMenu()
         {
-            new Arquivos();
             BDCadastro bdCadastro = new();
             BDVenda bdVenda = new();
 
@@ -268,6 +266,15 @@ namespace VendasProdutos
 
                     Console.WriteLine("\n\nVenda cadastrada com sucesso!\nPressione ENTER para voltar ao Menu Vendas...");
                     Console.ReadKey();
+                }
+                else if (escolha == "C")
+                {
+                    bdVenda.RemoverVenda(venda.Id);
+
+                    Console.WriteLine("O registro foi cancelado com sucesso!");
+                    Console.ReadKey();
+                    Console.WriteLine("\n\n\t Pressione ENTER para continuar...");
+                    Console.Clear();
                 }
             }
         }

@@ -1,5 +1,4 @@
-﻿using CadastrosBasicos.ManipulaArquivos;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -7,7 +6,6 @@ namespace CadastrosBasicos
 {
     public class Fornecedor
     {
-        public Read read = new Read();
         public string CNPJ { get; set; }
         public string RazaoSocial { get; set; }
         public DateTime DataAbertura { get; set; }

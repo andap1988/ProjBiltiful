@@ -314,5 +314,27 @@ namespace VendasProdutos
 
             return vendas;
         }
+
+        public void RemoverVenda(int id)
+        {
+            SqlConnection connection = new(ConnString);
+
+            string sql = $"DELETE from Venda WHERE ID = {id};";
+
+            try
+            {
+                using (connection)
+                {
+                    connection.Open();
+                    SqlCommand sqlCommand = new(sql, connection);
+                    sqlCommand.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("EX -> " + ex.Message);
+            }
+        }
     }
 }

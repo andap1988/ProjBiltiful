@@ -2,14 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using CadastrosBasicos;
-using CadastrosBasicos.ManipulaArquivos;
 
 namespace VendasProdutos
 {
     public class Venda
     {
-        public static Arquivos caminho = new Arquivos();
-
         public int Id { get; set; }
         public string Cliente { get; set; }
         public DateTime DataVenda { get; set; }

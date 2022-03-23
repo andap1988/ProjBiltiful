@@ -1,4 +1,3 @@
-using CadastrosBasicos.ManipulaArquivos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +9,6 @@ namespace CadastrosBasicos
 
     public class MenuCadastros
     {
-        public static Read read = new Read();
-
         public static void SubMenu()
         {
             string escolha;
@@ -187,7 +184,6 @@ namespace CadastrosBasicos
         public static void RegistrarFornecedor(DateTime dFundacao)
         {
             string rSocial = "", cnpj = "";
-            Read read = new Read();
             char situacao;
 
             BDCadastro bd = new();

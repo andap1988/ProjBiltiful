@@ -1,12 +1,10 @@
-﻿using CadastrosBasicos.ManipulaArquivos;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace CadastrosBasicos
 {
     public class Cliente
     {
-        public Read read = new Read();
         public string CPF { get; set; }
         public string Nome { get; set; }
         public DateTime DataNascimento { get; set; }
