@@ -12,16 +12,15 @@ namespace ComprasMateriasPrimas
         public int Id { get; set; } // 5 00000
         public DateTime DataCompra { get; set; } //8 00/00/0000
         public string Fornecedor { get; set; } //12 00.000.000/0001-00
-        public float ValorTotal { get; set; } // 7 00.000,00
+        public decimal ValorTotal { get; set; } // 7 00.000,00
         public List<ItemCompra> ListaDeItens { get; set; }
 
         public Compra()
         {
-            Id = new ManipulaArquivosCompraMP().PegarUltimoId();
             DataCompra = DateTime.Now;
         }
 
-        public Compra(int id, DateTime dCompra, string cnpjFornecedor, float vTotal)
+        public Compra(int id, DateTime dCompra, string cnpjFornecedor, decimal vTotal)
         {
             Id = id;
             DataCompra = dCompra;
@@ -29,143 +28,10 @@ namespace ComprasMateriasPrimas
             ValorTotal = vTotal;
         }
 
-        public void Cadastrar()
-        {
-            // Salvar no arquivo
-            new ManipulaArquivosCompraMP().Salvar(this);
-            Console.WriteLine($"Compra de codigo {Id} cadastrada!");
-            Console.ReadKey();
-        }
-
-        public static Compra Localizar(int id) => new ManipulaArquivosCompraMP().Procura(id);
-
-        public static void ImpressaoPorRegistro(List<Compra> compras)
-        {
-            string opt;
-            if (compras.Count == 0)
-            {
-                Console.Clear();
-                Console.WriteLine("Nada para mostrar: arquivo vazio!!");
-                return;
-            }
-            else
-            {
-                do
-                {
-                    Console.Clear();
-                    Console.WriteLine("1. Ver Compra");
-                    //Console.WriteLine("2. Ver Itens da Compra");
-                    Console.WriteLine("0. Voltar para o menu");
-                    opt = Console.ReadLine();
-                    switch (opt)
-                    {
-                        case "1":
-                            string escolha = "<<";
-                            int atual = 0;
-                            do
-                            {
-                                Console.Clear();
-                                Console.WriteLine("|         VISUALIZAÇAO DAS COMPRAS       |");
-                                if (escolha.Equals("<<"))
-                                {
-                                    atual = 0;
-                                    compras.ElementAt(atual).ImprimirCompra();
-                                }
-                                else if (escolha.Equals("<") && atual > 0)
-                                {
-                                    if (atual != 0)
-                                        atual--;
-
-                                    compras.ElementAt(atual).ImprimirCompra();
-                                }
-                                else if (escolha.Equals(">") && atual < compras.Count - 1)
-                                {
-                                    if (atual != compras.Count - 1)
-                                        ++atual;
-
-                                    compras.ElementAt(atual).ImprimirCompra();
-                                }
-                                else if (escolha.Equals(">>"))
-                                {
-                                    atual = compras.Count - 1;
-                                    compras.ElementAt(atual).ImprimirCompra();
-                                }
-                                Console.Write(" (<<) Primeiro (<) Anterior (>) Proximo (>>) Ultimo ");
-                                Console.WriteLine(@" ""x"" => Sair                           ");
-                                Console.Write("Navegar: ");
-                                escolha = Console.ReadLine();
-                            } while (escolha != "x");
-                            break;
-
-                        //case "2":
-                        //    Console.Clear();
-                        //    bool sair = false;
-                        //    int indice = 0;
-                        //    string[] dados = File.ReadAllLines(new ManipulaArquivosCompraMP().CaminhoItemCompra);
-                        //    if (dados.Length == 0)
-                        //    {
-                        //        Console.WriteLine("Nada pra mostrar: arquivo vazio!!");
-                        //        Console.ReadKey();
-                        //    }
-                        //    while (!sair)
-                        //    {
-                        //        Console.Clear();
-                        //        Console.WriteLine("1 - Inicio\n2 - Fim\n3 - Anterior\n4 - Proximo\n5 - Sair");
-                        //        Console.WriteLine("Escolha a opção que deseja: ");
-                        //        int opcao = int.Parse(Console.ReadLine());
-                        //        switch (opcao)
-                        //        {
-                        //            case 1:
-                        //                indice = 0;
-                        //                Console.WriteLine(dados[indice]);
-                        //                break;
-                        //            case 2:
-                        //                indice = dados.Length - 1;
-                        //                Console.WriteLine(dados[indice]);
-                        //                break;
-                        //            case 3:
-                        //                if (indice == 0)
-                        //                {
-                        //                    break;
-                        //                }
-                        //                else
-                        //                {
-                        //                    indice--;
-                        //                    Console.WriteLine(dados[indice]);
-                        //                }
-                        //                break;
-                        //            case 4:
-                        //                if (indice == dados.Length - 1)
-                        //                {
-                        //                    break;
-                        //                }
-                        //                else
-                        //                {
-                        //                    indice++;
-                        //                    Console.WriteLine(dados[indice]);
-                        //                }
-                        //                break;
-                        //            case 5:
-                        //                sair = true;
-                        //                break;
-                        //        }
-                        //    }
-                        //    break;
-
-                        case "0":
-                            break;
-
-                        default:
-                            Console.WriteLine("Digite 1 para Ver as compras e 2 para ver os Itens da Compra");
-                            break;
-                    }
-                } while (opt != "0");
-            }
-        }
-
         public static void SubMenu()
         {
-            new ManipulaArquivosCompraMP();
+            BDCompra bdCompra = new();
+            BDCadastro bdCadastro = new();
 
             int option = -1;
             while (option != 0)
@@ -183,60 +49,74 @@ namespace ComprasMateriasPrimas
                 option = int.Parse(Console.ReadLine());
                 switch (option)
                 {
-                    // ---------- CADASTRAR COMPRA -----------
                     case 1:
-                        if (new Read().VerificaListaFornecedor())
+                        if (bdCadastro.TemFornecedor())
                             CadastraNovaCompra();
                         else
                         {
-                            Console.WriteLine("Para realizar uma compra de materias primas devera ter o registro de ao menos um fornecedor.");
+                            Console.WriteLine("Para realizar uma compra de materias-primas devera ter o registro de ao menos um fornecedor.");
                             Console.ReadKey();
                         }
-                            break;
-
-                    // ---------- LOCALIZAR COMPRA -----------
-                    case 2:
-                        Console.WriteLine("\nLocalizar Compra\n");
-                        int okl;
-                        int id;
-                        do
-                        {
-                            Console.Write("Id da Compra: ");
-                            id = int.Parse(Console.ReadLine());
-                            okl = (id > 0 && id < 99999) && Compra.Localizar(id) != null ? 0 : 1;
-                        } while (okl != 0);
-                        if (okl == 2) break;
-                        Compra.Localizar(id).ImprimirCompra();
                         break;
-
-                    // ---------- IMPRESSÃO POR REGISTRO -----------
+                    case 2:
+                        Localizar();
+                        break;
                     case 3:
-                        ImpressaoPorRegistro(new ManipulaArquivosCompraMP().PegarTodasAsCompras());
+                        ImprimirCompras();
                         break;
                 }
-                Console.ReadKey();
                 Console.Clear();
             }
         }
 
         private static void CadastraNovaCompra()
         {
+            BDCompra bdCompra = new();
+            BDCadastro bdCadastro = new();
+            Fornecedor fornecedor = new();
             Compra compra = new();
-            int ok;
+            MPrima mprima = new();
+            bool flag = true;
             string cnpjFornecedor;
+
             do
             {
+                Console.Clear();
                 Console.Write("CNPJ do Fornecedor: ");
                 cnpjFornecedor = Console.ReadLine();
-
                 cnpjFornecedor = cnpjFornecedor.Replace(".", "").Replace("/", "").Replace("-", "");
 
-                ok = cnpjFornecedor != string.Empty &&
-                     Validacoes.ValidarCnpj(cnpjFornecedor) &&
-                     new Read().ProcurarFornecedor(cnpjFornecedor) != null ? 0 : 1;
-                if (ok != 0) Console.WriteLine("CNPJ invalido ou não encontrado na base de dados, digite novamente!");
-            } while (ok != 0);
-            cnpjFornecedor = new Read().ProcurarFornecedor(cnpjFornecedor).CNPJ;
+                if (cnpjFornecedor.Length < 14)
+                {
+                    Console.WriteLine(" CNPJ invalido");
+                    Console.WriteLine(" Pressione ENTER para voltar...");
+                    Console.ReadKey();
+                }
+                else
+                {
+                    fornecedor = bdCadastro.LocalizarFornecedor(cnpjFornecedor);
+
+                    if (fornecedor == null)
+                    {
+                        Console.WriteLine(" CNPJ nao encontrado");
+                        Console.WriteLine(" Pressione ENTER para voltar...");
+                        Console.ReadKey();
+                        return;
+                    }
+                    else if (fornecedor.Condicao)
+                    {
+                        Console.WriteLine(" CNPJ bloqueado para novas compras");
+                        Console.WriteLine(" Pressione ENTER para voltar...");
+                        Console.ReadKey();
+                        return;
+                    }
+                    else
+                        flag = false;
+                }
+
+            } while (flag);
+
+            cnpjFornecedor = fornecedor.CNPJ;
 
             int count = 1;
             List<ItemCompra> itens = new();
@@ -254,19 +134,35 @@ namespace ComprasMateriasPrimas
                 Console.WriteLine($"Item {count}");
                 do
                 {
-                    Console.Write("- Id da Matéria Prima: ");
+                    Console.Write("- Id da Matéria Prima (somente numeros): ");
                     idMP = Console.ReadLine();
-                } while (new MPrima().RetornaMateriaPrima(idMP) == null);
-                float valorUnitario;
-                float quantidade;
+
+                    int codigo = int.Parse(idMP);
+                    mprima = bdCadastro.LocalizarMateriaPrima(codigo);
+                    if (mprima.Situacao == 'I')
+                    {
+                        Console.WriteLine(" Materia-prima esta inativa. Escolha outra...");
+                        Console.WriteLine(" Pressione ENTER para digitar novamente...");
+                        Console.ReadKey();
+                        mprima = null;
+                    }
+
+                } while (mprima == null);
+
+                decimal valorUnitario;
+                decimal quantidade;
+
                 do
                 {
                     Console.Write("- Valor unitário do item: ");
-                    valorUnitario = float.Parse(Console.ReadLine());
+                    valorUnitario = decimal.Parse(Console.ReadLine());
                     Console.Write("- Quantidade do item que deseja comprar: ");
-                    quantidade = float.Parse(Console.ReadLine());
-                    if ((valorUnitario * quantidade) > 99999.99f) Console.WriteLine("O valor total do Item ultrapassou o limite de 99.999,99");
-                } while ((valorUnitario * quantidade) > 99999.99f);
+                    quantidade = decimal.Parse(Console.ReadLine());
+                    if ((valorUnitario * quantidade) > 9999999) Console.WriteLine("O valor total do Item ultrapassou o limite de 99.999,99");
+                } while ((valorUnitario * quantidade) > 9999999);
+
+                if (count == 1)
+                    compra = bdCompra.GravarCompra(fornecedor.CNPJ, DateTime.Now.Date);
 
                 ItemCompra item = new(compra.Id,
                                         compra.DataCompra,
@@ -276,64 +172,187 @@ namespace ComprasMateriasPrimas
                 itens.Add(item);
                 count++;
             } while (count <= qtdd);
+
+            decimal valorTotal = 0;
             compra.Fornecedor = cnpjFornecedor;
-            itens.ForEach(item => compra.ValorTotal += item.TotalItem);
-            ItemCompra.Cadastrar(itens);
-            compra.Cadastrar();
+            itens.ForEach(item => valorTotal += item.TotalItem);
+
+            bdCompra.GravarItemCompra(itens);
+            bdCompra.GravarCompra(fornecedor.CNPJ, compra.DataCompra, true, compra.Id, valorTotal);
+            itens.ForEach(item =>
+                bdCadastro.EditarMateriaPrima(int.Parse(item.MateriaPrima), null, compra.DataCompra.ToString("yyyy/MM/dd").Replace("/", "-")));
+
+            Console.WriteLine(" Compra concluida.");
+            Console.WriteLine(" Pressione ENTER para voltar...");
+            Console.ReadKey();
         }
 
-        public void ImprimirCompra()
+        public static void Localizar()
         {
-            Console.WriteLine("---------------------------------");
-            Console.WriteLine("Id: " + Compra.FormatarId(Id));
-            Console.WriteLine("Data: " + DataCompra);
-            Console.WriteLine("CNPJ Fornecedor: " + Fornecedor);
-            Console.WriteLine("Valor total: " + ValorTotal.ToString("0000000").Insert(5, ",").TrimStart('0'));
-            Console.WriteLine("---------------------------------");
+            string cod;
+
+            BDCompra bdCompra = new();
+
+            Console.Clear();
+            Console.WriteLine("\n Localizar Compra");
+            Console.Write("\n Digite o codigo da compra: ");
+            cod = Console.ReadLine();
+
+            int codigo = int.Parse(cod);
+            Compra compra = bdCompra.LocalizarCompra(codigo);
+            List<ItemCompra> itensCompra = null;
+
+            if (compra == null)
+            {
+                Console.WriteLine("\n A compra nao existe.");
+                Console.WriteLine("\n Pressione ENTER para voltar ao menu");
+                Console.ReadKey();
+            }
+            else
+            {
+                Console.WriteLine("\n---------------------------------------\n");
+                Console.WriteLine($" Codigo:          {compra.Id:0000}");
+                Console.WriteLine($" Data Compra:     {compra.DataCompra:dd/MM/yyyy}");
+                Console.WriteLine($" CNPJ Fornecedor: {compra.Fornecedor}");
+                Console.WriteLine($" Valor Total:     {compra.ValorTotal}");
+                Console.WriteLine("\n---------------------------------------\n");
+
+                itensCompra = bdCompra.ImprimirItens(compra.Id);
+
+                Console.WriteLine("\n Cod.       Materia-prima           V. Unitario         Qt.         Total");
+                Console.WriteLine(" ---------------------------------------------------------------------------\n");
+                itensCompra.ForEach(item =>
+                {
+                    Console.WriteLine($" {item.Id:0000}          {item.MateriaPrima}               {item.ValorUnitario,8}       {item.Quantidade,8}       {item.TotalItem,8}");
+                });
+
+                Console.WriteLine("\n Pressione ENTER para voltar ao menu");
+                Console.ReadKey();
+            }
         }
 
-        public void ImprimirCompraEmLinha()
+        public static void ImprimirCompras()
         {
-            Console.Write("Id: " + Compra.FormatarId(Id) + " / ");
-            Console.Write("Data: " + DataCompra + " / ");
-            Console.Write("CNPJ Fornecedor: " + Fornecedor + " / ");
-            Console.Write("Valor total: " + ValorTotal);
+            BDCompra bdCompra = new();
+
+            Console.Clear();
+
+            List<Compra> Compras = bdCompra.ListarCompras();
+
+            int posicao = 0, max = Compras.Count;
+            string escolha = "0", msgInicial, msgSaida;
+
+            msgInicial = $"\n ...:: Lista de Compras ::...\n";
+            msgSaida = " Caso queira voltar ao menu anterior, basta digitar 9 e pressionar ENTER\n";
+
+            Console.Clear();
+            Console.WriteLine(msgInicial);
+            Console.WriteLine(msgSaida);
+            Console.WriteLine(" -------------------------------------------------------------------------\n");
+            Console.WriteLine($" 1º Registro\n");
+            DesenharDados(Compras.First());
+
+            do
+            {
+                Console.WriteLine("\n 1 - Primeiro / 2 - Anterior / 3 - Proximo / 4 - Ultimo\n");
+                Console.Write(" Escolha: ");
+                escolha = Console.ReadLine();
+
+                if (escolha != "1" && escolha != "2" && escolha != "3" && escolha != "4" && escolha != "9")
+                {
+                    Console.WriteLine("\n xxxx Opcao invalida.");
+                    Console.WriteLine("\n Pressione ENTER para voltar...\n");
+                    Console.ReadKey();
+                }
+                else if (escolha == "9")
+                    return;
+                else
+                {
+                    if (escolha == "1")
+                    {
+                        if (posicao == 0)
+                            Console.WriteLine("\n xxxx Ja estamos no primeiro registro.");
+                        else
+                        {
+                            Console.Clear();
+                            Console.WriteLine(msgInicial);
+                            Console.WriteLine(msgSaida);
+                            Console.WriteLine(" -------------------------------------------------------------------------\n");
+                            Console.WriteLine($" 1º Registro\n");
+                            DesenharDados(Compras.First());
+                            posicao = 0;
+                        }
+                    }
+                    else if (escolha == "2")
+                    {
+                        if (posicao == 0)
+                            Console.WriteLine("\n xxxx Nao ha registro anterior.");
+                        else
+                        {
+                            posicao--;
+                            Console.Clear();
+                            Console.WriteLine(msgInicial);
+                            Console.WriteLine(msgSaida);
+                            Console.WriteLine(" -------------------------------------------------------------------------\n");
+                            Console.WriteLine($" {posicao + 1}º Registro\n");
+                            DesenharDados(Compras[posicao]);
+                        }
+                    }
+                    else if (escolha == "3")
+                    {
+                        if (posicao == Compras.Count - 1)
+                            Console.WriteLine("\n xxxx Nao ha proximo registro.");
+                        else
+                        {
+                            posicao++;
+                            Console.Clear();
+                            Console.WriteLine(msgInicial);
+                            Console.WriteLine(msgSaida);
+                            Console.WriteLine(" -------------------------------------------------------------------------\n");
+                            Console.WriteLine($" {posicao + 1}º Registro\n");
+                            DesenharDados(Compras[posicao]);
+                        }
+                    }
+                    else if (escolha == "4")
+                    {
+                        if (posicao == Compras.Count - 1)
+                            Console.WriteLine("\n xxxx Ja estamos no ultimo registro.");
+                        else
+                        {
+                            Console.Clear();
+                            Console.WriteLine(msgInicial);
+                            Console.WriteLine(msgSaida);
+                            Console.WriteLine(" -------------------------------------------------------------------------\n");
+                            Console.WriteLine($" {Compras.Count}º Registro (ultimo registro)\n");
+                            DesenharDados(Compras.Last());
+                            posicao = Compras.Count - 1;
+                        }
+                    }
+                }
+            } while (escolha != "9");
         }
 
-        public override string ToString() => FormatarId(Id) + FormatarData(DataCompra) + FormatarCNPJ(Fornecedor) + FormatarValorTotal(ValorTotal);
-
-        public static string FormatarId(int id) => id.ToString().PadLeft(5, '0');
-
-        public static string FormatarData(DateTime data) => data.ToString("dd/MM/yyyy").Replace("/", "");
-
-        public static string FormatarCNPJ(string cnpj) => cnpj.Replace(".", "").Replace("/", "").Replace("-", "");
-
-        public static string FormatarValorTotal(float total) => string.Join("", total.ToString("0.00").PadLeft(8, '0').Split(','));
-
-        public static Compra ExtrairCompra(string linhaDoArquivo) => new Compra(
-                                                                        ExtrairId(linhaDoArquivo),
-                                                                        ExtrairDataCompra(linhaDoArquivo),
-                                                                        ExtrairCNPJ(linhaDoArquivo),
-                                                                        ExtrairValorTotal(linhaDoArquivo));
-
-        public static int ExtrairId(string linhaDoArquivo) => int.Parse(linhaDoArquivo.Substring(0, 5).TrimStart('0'));
-
-        public static DateTime ExtrairDataCompra(string linhaDoArquivo)
+        public static void DesenharDados(Compra compra)
         {
-            string data = linhaDoArquivo.Substring(5, 8);
-            int dia = int.Parse(data.Substring(0, 2));
-            int mes = int.Parse(data.Substring(2, 2));
-            int ano = int.Parse(data.Substring(4, 4));
+            List<ItemCompra> itensCompra = null;
+            BDCompra bdCompra = new();
 
-            return new DateTime(ano, mes, dia);
+            Console.WriteLine("\n---------------------------------------\n");
+            Console.WriteLine($" Codigo:          {compra.Id:0000}");
+            Console.WriteLine($" Data Compra:     {compra.DataCompra:dd/MM/yyyy}");
+            Console.WriteLine($" CNPJ Fornecedor: {compra.Fornecedor}");
+            Console.WriteLine($" Valor Total:     {compra.ValorTotal}");
+            Console.WriteLine("\n---------------------------------------\n");
+
+            itensCompra = bdCompra.ImprimirItens(compra.Id);
+
+            Console.WriteLine("\n Cod.       Materia-prima           V. Unitario         Qt.         Total");
+            Console.WriteLine(" ---------------------------------------------------------------------------\n");
+            itensCompra.ForEach(item =>
+            {
+                Console.WriteLine($" {item.Id:0000}          {item.MateriaPrima}               {item.ValorUnitario,8}       {item.Quantidade,8}       {item.TotalItem,8}");
+            });
+            Console.WriteLine("\n\n                               --/-------/--\n");
         }
-
-        public static string ExtrairCNPJ(string linhaDoArquivo) => linhaDoArquivo.Substring(13, 14)
-                                                                    .Insert(2, ".")
-                                                                    .Insert(6, ".")
-                                                                    .Insert(10, "/")
-                                                                    .Insert(15, "-");
-
-        public static float ExtrairValorTotal(string linhaDoArquivo) => float.Parse(linhaDoArquivo.Substring(26, 7));
     }
 }

@@ -14,11 +14,11 @@ namespace ProducaoCosmeticos
         public string Id { get; set; }
         public string DataProducao { get; set; }
         public string Produto { get; set; }
-        public float Quantidade { get; set; }
+        public decimal Quantidade { get; set; }
         public int Contador { get; set; }
         #endregion
         #region Construtor
-        public Producao(string id, string dataProducao, string produto, float quantidade)
+        public Producao(string id, string dataProducao, string produto, decimal quantidade)
         {
             Id = id;
             DataProducao = dataProducao;
@@ -37,7 +37,8 @@ namespace ProducaoCosmeticos
 
         public void SubMenu()
         {
-
+            BDCadastro bdCadastro = new();
+            BDProducao bdProducao = new();
             string escolha;
 
             do
@@ -57,8 +58,7 @@ namespace ProducaoCosmeticos
                     case "0":
                         break;
                     case "1":
-                        string caminhoFinal = Path.Combine(Directory.GetCurrentDirectory(), "DataBase");
-                        if (File.Exists(caminhoFinal + "\\Cosmetico.dat") && File.Exists(caminhoFinal + "\\Materia.dat"))
+                        if (bdCadastro.TemMPrima() && bdCadastro.TemProduto())
                         {
                             Console.Clear();
                             Cadastrar();
@@ -94,47 +94,45 @@ namespace ProducaoCosmeticos
 
         ItemProducao itemProducao = new ItemProducao();
 
-        List<ItemProducao> itens = new List<ItemProducao>();
 
         public void Cadastrar()
         {
-
-            if (Contador == 1)
-            {
-
-                LerArquivo();
-
-            }
+            List<ItemProducao> itens = new();
+            BDCadastro bdCadastro = new();
+            BDProducao bdProducao = new();
+            Produto pproduto;
+            MPrima materiaPrima;
+            Producao producao = null;
 
             string dataProducao = DateTime.Now.ToString("dd/MM/yyyy");
             string produto = null, auxiliarProduto, id, codigoMateriaPrima;
-            float quantidade = 0, auxiliarQuantidade, quantidadeMateriaPrima;
+            decimal quantidade = 0, auxiliarQuantidade, quantidadeMateriaPrima;
             int escolha, opcao = 0;
             bool control = false;
 
-
             id = Contador.ToString().PadLeft(5, '0');
 
-            if (Contador <= 99999)
+            Console.Write("\nData de produção: " + dataProducao + "\n");
+
+            do
             {
+                Console.Write("Digite o código do produto: ");
+                auxiliarProduto = Console.ReadLine();
 
-                Console.Write("ID: " + id);
-
-                Console.Write("\nData de produção: " + dataProducao + "\n");
-
-
-                do
+                if (auxiliarProduto.Length != 13)
                 {
-
-                    Console.Write("Digite o código do produto: ");
-                    auxiliarProduto = Console.ReadLine();
-
-                    Produto pproduto = new Produto().RetornaProduto(auxiliarProduto);
+                    Console.WriteLine(" Codigo do produto invalido.");
+                    Console.WriteLine(" Pressione ENTER para voltar...");
+                    Console.ReadKey();
+                }
+                else
+                {
+                    pproduto = bdCadastro.LocalizarProduto(auxiliarProduto);
 
                     if (pproduto == null)
                     {
 
-                        Console.WriteLine("Código de produto inválido!");
+                        Console.WriteLine(" Código de produto inválido!");
                         Console.WriteLine("\n\n\t Pressione ENTER para continuar...");
                         Console.ReadKey();
                         Console.Clear();
@@ -150,209 +148,153 @@ namespace ProducaoCosmeticos
                         produto = pproduto.CodigoBarras;
                         control = true;
                     }
+                }
 
-                } while (control != true);
+            } while (control != true);
 
+            control = false;
+
+            do
+            {
+                Console.Write("Quantidade: ");
+                auxiliarQuantidade = decimal.Parse(Console.ReadLine());
+
+                if (auxiliarQuantidade > 0 && auxiliarQuantidade < 1000)
+                {
+                    quantidade = auxiliarQuantidade;
+                    control = true;
+                }
+                else
+                {
+                    Console.WriteLine("\nNão é possivel adicionar a quantidade digitada!");
+                    Console.WriteLine("\nDigite a quantidade novamente");
+                }
+
+            }
+            while (control != true);
+
+            do
+            {
                 control = false;
 
                 do
                 {
+                    Console.Write("Digite o código da matéria prima (somente numeros): ");
+                    codigoMateriaPrima = Console.ReadLine();
+                    int codigo = int.Parse(codigoMateriaPrima);
 
-                    Console.Write("Quantidade: ");
-                    auxiliarQuantidade = float.Parse(Console.ReadLine());
+                    materiaPrima = bdCadastro.LocalizarMateriaPrima(codigo);
 
-
-                    if (auxiliarQuantidade > 0 && auxiliarQuantidade < 1000)
+                    if (materiaPrima == null)
                     {
 
-                        quantidade = auxiliarQuantidade;
-                        control = true;
-
+                        Console.WriteLine("Código de matéria prima inválida!");
+                        Console.WriteLine("\n\n\t Pressione ENTER para continuar...");
+                        Console.ReadKey();
+                        Console.Clear();
+                    }
+                    else if (materiaPrima.Situacao.Equals('I'))
+                    {
+                        Console.WriteLine("O item escolhido esta inativo.");
+                        Console.ReadKey();
                     }
                     else
-                    {
+                        control = true;
+                } while (control != true);
 
-                        Console.WriteLine("\nNão é possivel adicionar a quantidade digitada!");
-                        Console.WriteLine("\nDigite a quantidade novamente");
+                Console.Write("Digite a quantidade de matéria prima que será utilizada: ");
+                quantidadeMateriaPrima = decimal.Parse(Console.ReadLine());
 
-                    }
-
-                }
-                while (control != true);
-
-                do
+                if (quantidadeMateriaPrima < 0 || quantidadeMateriaPrima >= 1000)
                 {
-                    control = false;
-
-                    MPrima materiaPrima;
-
-                    do
-                    {
-                        materiaPrima = new MPrima();
-
-                        Console.Write("Digite o código da matéria prima: ");
-                        codigoMateriaPrima = Console.ReadLine();
-
-                        materiaPrima = materiaPrima.RetornaMateriaPrima(codigoMateriaPrima);
-
-                        if (materiaPrima == null)
-                        {
-
-                            Console.WriteLine("Código de matéria prima inválida!");
-                            Console.WriteLine("\n\n\t Pressione ENTER para continuar...");
-                            Console.ReadKey();
-                            Console.Clear();
-                        }
-                        else if (materiaPrima.Situacao.Equals('I'))
-                        {
-                            Console.WriteLine("O item escolhido esta inativo.");
-                            Console.ReadKey();
-                        }
-                        else
-                        {
-                            codigoMateriaPrima = materiaPrima.Id;
-                            control = true;
-                        }
-
-                    } while (control != true);
-
-                    Console.Write("Digite a quantidade de matéria prima que será utilizada: ");
-                    quantidadeMateriaPrima = float.Parse(Console.ReadLine());
-
-                    if (quantidadeMateriaPrima < 0 || quantidadeMateriaPrima >= 1000)
-                    {
-
-                        Console.WriteLine("Não é possivel adicionar essa quantidade de matéria prima");
-                        continue;
-
-                    }
-
-                    itens.Add(new ItemProducao(id, dataProducao, codigoMateriaPrima, quantidadeMateriaPrima));
-
-
-                    Console.WriteLine("Gostaria de adicionar mais uma materia prima?\n(1) Sim\n(2) Não");
-
-                    Console.Write("Resposta: "); opcao = int.Parse(Console.ReadLine());
-
-
-
-                } while (opcao == 1);
-
-                Console.WriteLine("Gostaria de finalizar o registro ou deseja excluí-lo agora mesmo?");
-                Console.WriteLine("1. Finalizar\n2. Cancelar registro");
-
-                Console.Write("Resposta: "); escolha = int.Parse(Console.ReadLine());
-
-                if (escolha == 1)
-                {
-
-                    Producao producao = new(id, dataProducao, produto, quantidade);
-                    listaProducao.Add(producao);
-
-                    Contador++;
-
-                    string formatado = "" + id + dataProducao.Replace("/", "") + produto + quantidade.ToString("00000");
-                    SalvarArquivo(formatado);
-
-                    itemProducao.GravarItemProducao(itens);
-
-                    Console.WriteLine("\n\tRegistro efetuado com sucesso!");
-                    Console.ReadKey();
-                    Console.WriteLine("\n\n\t Pressione ENTER para continuar...");
-                    Console.Clear();
-
-                }
-                else
-                {
-
-                    Console.WriteLine("O registro foi cancelado com sucesso!");
-                    Console.ReadKey();
-                    Console.WriteLine("\n\n\t Pressione ENTER para continuar...");
-                    Console.Clear();
-
+                    Console.WriteLine("Não é possivel adicionar essa quantidade de matéria prima");
+                    continue;
                 }
 
+                DateTime data = DateTime.Parse(dataProducao);
+                if (producao == null)
+                    producao = bdProducao.GravarProducao(-1, produto, quantidade, data);
 
-            }
-            else
+                ItemProducao item = new(producao.Id, dataProducao, materiaPrima.Id, quantidadeMateriaPrima);
+
+                itens.Add(item);
+
+                Console.WriteLine("Gostaria de adicionar mais uma materia prima?\n(1) Sim\n(2) Não");
+                Console.Write("Resposta: "); opcao = int.Parse(Console.ReadLine());
+
+            } while (opcao == 1);
+
+            Console.WriteLine("Gostaria de finalizar o registro ou deseja excluí-lo agora mesmo?");
+            Console.WriteLine("1. Finalizar\n2. Cancelar registro");
+
+            Console.Write("Resposta: "); escolha = int.Parse(Console.ReadLine());
+
+            if (escolha == 1)
             {
+                bdProducao.GravarItemProducao(itens);
 
-                Console.WriteLine("Não é possivel registrar mais produções, pois o número limite de 99999 foi atingido!");
+                Console.WriteLine("\n\tRegistro efetuado com sucesso!");
                 Console.ReadKey();
                 Console.WriteLine("\n\n\t Pressione ENTER para continuar...");
                 Console.Clear();
-
-            }
-
-        }
-
-        public Producao Localizar()
-        {
-
-            if (Contador == 1)
-            {
-
-                LerArquivo();
-
-            }
-
-
-            Producao encontrado;
-            string buscaId;
-
-            if (listaProducao.Count == 0)
-            {
-
-                Console.WriteLine("Não existe nenhum registro de produção ainda!");
-                Console.ReadKey();
-                return null;
-
             }
             else
             {
+                Console.WriteLine("O registro foi cancelado com sucesso!");
+                Console.ReadKey();
+                Console.WriteLine("\n\n\t Pressione ENTER para continuar...");
+                Console.Clear();
+            }
+        }
 
-                Console.Write("Digite o ID da produção que você deseja localizar: ");
+        public void Localizar()
+        {
+            string cod;
 
-                buscaId = Console.ReadLine();
-                encontrado = listaProducao.Find(x => x.Id == buscaId);
+            BDProducao bdProducao = new();
 
-                if (encontrado == null)
+            Console.Clear();
+            Console.WriteLine("\n Localizar producao");
+            Console.Write("\n Digite o codigo da producao: ");
+            cod = Console.ReadLine();
+
+            int codigo = int.Parse(cod);
+            Producao producao = bdProducao.LocalizarProducao(codigo);
+
+            List<ItemProducao> itensProducao = null;
+
+            if (producao == null)
+            {
+                Console.WriteLine("\n A producao nao existe.");
+                Console.WriteLine("\n Pressione ENTER para voltar ao menu");
+                Console.ReadKey();
+            }
+            else
+            {
+                Console.WriteLine("\n---------------------------------------\n");
+                Console.WriteLine($" Codigo:          {producao.Id:0000}");
+                Console.WriteLine($" Data Producao:   {producao.DataProducao:dd/MM/yyyy}");
+                Console.WriteLine($" Produto:         {producao.Produto}");
+                Console.WriteLine($" Quantidade:      {producao.Quantidade}");
+                Console.WriteLine("\n---------------------------------------\n");
+
+                itensProducao = bdProducao.ImprimirItens(int.Parse(producao.Id));
+
+                Console.WriteLine("\n Cod.       Materia-prima            Qt.   ");
+                Console.WriteLine(" ----------------------------------------------\n");
+                itensProducao.ForEach(item =>
                 {
+                    Console.WriteLine($" {item.Id:0000}          {item.MateriaPrima}           {item.QuantidadeMateriaPrima,8}");
+                });
 
-                    Console.WriteLine("Nenhuma produção com esse id foi localizada!");
-                    Console.WriteLine("\n\n\t Pressione ENTER para continuar...");
-                    Console.ReadKey();
-                    Console.Clear();
-
-                    return null;
-
-                }
-                else
-                {
-                    Console.Clear();
-                    Console.WriteLine(encontrado.ToString());
-                    BuscarItemProducao(encontrado.Id);
-
-
-                    Console.WriteLine("\n\n\t Pressione ENTER para continuar...");
-                    Console.ReadKey();
-                    Console.Clear();
-
-                    return encontrado;
-
-                }
+                Console.WriteLine("\n Pressione ENTER para voltar ao menu");
+                Console.ReadKey();
             }
         }
 
         public void ImprimirPorRegistro()
         {
 
-            if (Contador == 1)
-            {
-
-                LerArquivo();
-
-            }
 
             int escolha, i = 0;
 
@@ -549,7 +491,7 @@ namespace ProducaoCosmeticos
             return cbarras;
 
         }
-
+        /*
         public void LerArquivo()
         {
 
@@ -599,7 +541,7 @@ namespace ProducaoCosmeticos
 
             }
         }
-
+        */
         public void BuscarItemProducao(string codigoproducao)
         {
             string caminhoInicial = Directory.GetCurrentDirectory();

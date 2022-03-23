@@ -7,7 +7,6 @@ namespace CadastrosBasicos
 {
     public class Fornecedor
     {
-        public Write write = new Write();
         public Read read = new Read();
         public string CNPJ { get; set; }
         public string RazaoSocial { get; set; }
@@ -15,6 +14,7 @@ namespace CadastrosBasicos
         public DateTime UltimaCompra { get; set; }
         public DateTime DataCadastro { get; set; }
         public char Situacao { get; set; }
+        public bool Condicao { get; set; }
 
         public Fornecedor()
         {
@@ -41,10 +41,13 @@ namespace CadastrosBasicos
         public void Navegar()
         {
             Console.WriteLine("============== Fornecedores ==============");
-            bool verificaArquivo = read.VerificaListaFornecedor();
-            if (verificaArquivo == true)
+
+            BDCadastro bd = new();
+            List<Fornecedor> lista = bd.ListarFornecedores();
+
+            if (lista.Count > 0)
             {
-                List<Fornecedor> lista = read.ListaArquivoFornecedor();
+                
                 int opcao = 0, posicao = 0;
                 bool flag = false;
                 do
@@ -104,73 +107,113 @@ namespace CadastrosBasicos
                 Console.ReadKey();
             }
         }
+
         public void Localizar()
         {
+            BDCadastro bd = new();
+
             Console.WriteLine("Insira o CNPJ para localizar: ");
             string cnpj = Console.ReadLine();
+            cnpj = cnpj.Replace(".", "").Replace("-", "").Replace("/", "");
 
-            Fornecedor fornecedor = read.ProcurarFornecedor(cnpj);
+            Fornecedor fornecedor = bd.LocalizarFornecedor(cnpj);
 
             if (fornecedor != null)
             {
-                Console.WriteLine(fornecedor.ToString());
+                string situacao = fornecedor.Situacao.ToString();
+                if (situacao == "A")
+                    situacao = "Ativo";
+                else if (situacao == "I")
+                    situacao = "Inativo";
+
+                Console.WriteLine("\n---------------------------------------\n");
+                Console.WriteLine($" CNPJ:          {fornecedor.CNPJ}");
+                Console.WriteLine($" Razao Social:  {fornecedor.RazaoSocial}");
+                Console.WriteLine($" Data Abertura: {fornecedor.DataAbertura}");
+                Console.WriteLine($" Ultima Compra: {fornecedor.UltimaCompra}");
+                Console.WriteLine($" Data Cadastro: {fornecedor.DataCadastro}");
+                Console.WriteLine($" Situacao:      {situacao}");
+                Console.WriteLine($" Condicao:      {(fornecedor.Condicao ? "Bloqueado" : "Em dia")}");
+                Console.WriteLine("\n---------------------------------------\n");
             }
             else
                 Console.WriteLine("Nenhum cadastrado foi encontrado!");
-            Console.WriteLine("Pressione enter para voltar ao menu.");
+
+            Console.WriteLine("Pressione ENTER para voltar...");
             Console.ReadKey();
         }
-        public void BloqueiaFornecedor()
+
+        public void BloquearFornecedor()
         {
+            BDCadastro bd = new();
             Fornecedor fornecedor;
+
             Console.WriteLine("Insira o CNPJ para bloqueio: ");
             string cnpj = Console.ReadLine();
             cnpj = cnpj.Replace(".", "").Replace("-", "").Replace("/", "");
 
-            if (read.ProcurarCNPJBloqueado(cnpj))
+            fornecedor = bd.LocalizarFornecedor(cnpj);
+
+            if (fornecedor == null)
             {
-                bool flag = false;
-                int opcao;
-                Console.WriteLine("Fornecedor ja esta bloqueado");
-                Console.WriteLine("Deseja desbloqueado ? [1 - Sim/ 2 - Nao]");
-
-                do
-                {
-                    flag = int.TryParse(Console.ReadLine(), out opcao);
-                } while (flag != true);
-
-                if (opcao == 1)
-                {
-                    new Write().DesbloqueiaFornecedor(cnpj);
-                }
+                Console.WriteLine(" CNPJ nao encontrado.");
+                Console.WriteLine(" Pressione ENTER para voltar...");
+                Console.ReadKey();
             }
             else
             {
-                if (Validacoes.ValidarCnpj(cnpj))
-                {
-                    fornecedor = read.ProcurarFornecedor(cnpj);
-                    if (fornecedor != null)
-                    {
-                        write.BloquearFornecedor(fornecedor.CNPJ);
-                        Console.WriteLine("CNPJ bloqueado!");
-                    }
-                }
-                else
-                    Console.WriteLine("CNPJ incorreto!");
+                bd.BloquearFornecedor(cnpj);
+
+                Console.WriteLine(" Fornecedor bloqueado.");
+                Console.WriteLine(" Pressione ENTER para voltar...");
+                Console.ReadKey();
             }
-        } 
+        }
+
+        public void DesbloquearFornecedor()
+        {
+            BDCadastro bd = new();
+            Fornecedor fornecedor;
+
+            Console.WriteLine("Insira o CNPJ para desbloqueio: ");
+            string cnpj = Console.ReadLine();
+            cnpj = cnpj.Replace(".", "").Replace("-", "").Replace("/", "");
+
+            fornecedor = bd.LocalizarFornecedor(cnpj);
+
+            if (fornecedor == null)
+            {
+                Console.WriteLine(" CNPJ nao encontrado.");
+                Console.WriteLine(" Pressione ENTER para voltar...");
+                Console.ReadKey();
+            }
+            else
+            {
+                bd.DesbloquearFornecedor(cnpj);
+
+                Console.WriteLine(" Fornecedor desbloqueado.");
+                Console.WriteLine(" Pressione ENTER para voltar...");
+                Console.ReadKey();
+            }
+        }
+
         public string RetornaArquivo()
         {
             return CNPJ + RazaoSocial + DataAbertura.ToString("dd/MM/yyyy") + UltimaCompra.ToString("dd/MM/yyyy") + DataCadastro.ToString("dd/MM/yyyy") + Situacao;
         }
-        public Fornecedor Editar()
+
+        public void Editar()
         {
+            BDCadastro bd = new();
             Fornecedor fornecedor;
+
             Console.WriteLine("Somente algumas informacoes podem ser alterada como (Razao social/situacao), caso nao queira alterar alguma informacao pressione enter!");
             Console.Write("CNPJ: ");
             string cnpj = Console.ReadLine();
+            cnpj = cnpj.Replace(".", "").Replace("-", "").Replace("/", "");
 
-            fornecedor = read.ProcurarFornecedor(cnpj);
+            fornecedor = bd.LocalizarFornecedor(cnpj);
+
             if (fornecedor != null)
             {
                 Console.WriteLine("Razao social: ");
@@ -179,32 +222,22 @@ namespace CadastrosBasicos
                 bool flagSituacao = char.TryParse(Console.ReadLine().ToString().ToUpper(), out char situacao);
 
                 fornecedor.RazaoSocial = nome == "" ? fornecedor.RazaoSocial : nome;
-
                 fornecedor.Situacao = flagSituacao == false ? fornecedor.Situacao : situacao;
 
-                write.EditarFornecedor(fornecedor);
-            }
-            return fornecedor;
-        }
-        public void FornecedorBloqueado()
-        {
-            Console.WriteLine("Insira o CNPJ para pesquisa: ");
-            string cnpj = Console.ReadLine();
-            bool flag = new Read().ProcurarCNPJBloqueado(cnpj);
+                bd.EditarFornecedor(fornecedor);
 
-            if (flag)
-            {
-                Fornecedor fornecedor = new Read().ProcurarFornecedor(cnpj);
-                Console.WriteLine(fornecedor.ToString());
+                Console.WriteLine(" Fornecedor editado.");
+                Console.WriteLine(" Pressione ENTER para voltar...");
                 Console.ReadKey();
             }
             else
             {
-                Console.WriteLine("Fornecedor bloqueado nao encontrado");
+                Console.WriteLine(" Nenhum CNPJ encontrado.");
+                Console.WriteLine(" Pressione ENTER para voltar...");
                 Console.ReadKey();
             }
-
         }
+
         public override string ToString()
         {
             return $"CNPJ: {CNPJ}\nRSocial: {RazaoSocial.Trim()}\nData de Abertura da empresa: {DataAbertura.ToString("dd/MM/yyyy")}\nUltima Compra: {UltimaCompra.ToString("dd/MM/yyyy")}\nData de Cadastro: {DataCadastro.ToString("dd/MM/yyyy")}\nSituacao: {Situacao}";

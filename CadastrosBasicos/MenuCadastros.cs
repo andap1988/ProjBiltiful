@@ -10,7 +10,6 @@ namespace CadastrosBasicos
 
     public class MenuCadastros
     {
-        public static Write write = new Write();
         public static Read read = new Read();
 
         public static void SubMenu()
@@ -69,16 +68,16 @@ namespace CadastrosBasicos
                 Console.WriteLine("1. Cadastar cliente");
                 Console.WriteLine("2. Listar clientes");
                 Console.WriteLine("3. Editar registro de cliente");
-                Console.WriteLine("4. Bloquear/Desbloqueia cliente (Inadimplente)");
-                Console.WriteLine("5. Localizar cliente");
-                Console.WriteLine("6. Localizar cliente bloqueado");
+                Console.WriteLine("4. Bloquear cliente");
+                Console.WriteLine("5. Desbloquear cliente");
+                Console.WriteLine("6. Localizar cliente");
                 Console.WriteLine("-------------------------------------------------------");
                 Console.WriteLine("7. Cadastar fornecedor");
                 Console.WriteLine("8. Listar fornecedores");
                 Console.WriteLine("9. Editar registro de fornecedor");
-                Console.WriteLine("10. Bloquear/Desbloqueia fornecedor");
-                Console.WriteLine("11. Localizar fornecedor");
-                Console.WriteLine("12. Localizar fornecedor bloqueado");
+                Console.WriteLine("10. Bloquear fornecedor");
+                Console.WriteLine("11. Desbloquear fornecedor");
+                Console.WriteLine("12. Localizar fornecedor");
                 Console.WriteLine("-------------------------------------------------------");
                 Console.WriteLine("0. Voltar ao menu anterior");
                 Console.Write("\nEscolha: ");
@@ -87,36 +86,28 @@ namespace CadastrosBasicos
                 {
                     case "0":
                         break;
-
                     case "1":
                         NovoCliente();
                         break;
-
                     case "2":
                         new Cliente().Navegar();
                         break;
-
                     case "3":
                         new Cliente().Editar();
                         break;
-
                     case "4":
-                        new Cliente().BloqueiaCadastro();
-                        
+                        new Cliente().BloquearCadastro();                        
                         break;
-
                     case "5":
-                        new Cliente().Localizar();
+                        new Cliente().DesbloquearCadastro();
                         break;
 
                     case "6":
-                        new Cliente().ClientesBloqueados();
+                        new Cliente().Localizar();
                         break;
-
                     case "7":
                         NovoFornecedor();
                         break;
-
                     case "8":
                         new Fornecedor().Navegar();
                         break;
@@ -124,13 +115,13 @@ namespace CadastrosBasicos
                         new Fornecedor().Editar();
                         break;
                     case "10":
-                        new Fornecedor().BloqueiaFornecedor();
+                        new Fornecedor().BloquearFornecedor();
                         break;
                     case "11":
-                        new Fornecedor().Localizar();
+                        new Fornecedor().DesbloquearFornecedor();
                         break;
                     case "12":
-                        new Fornecedor().FornecedorBloqueado();
+                        new Fornecedor().Localizar();
                         break;
                     default:
                         Console.Clear();
@@ -180,10 +171,10 @@ namespace CadastrosBasicos
                 Console.Write("Data de criacao da empresa:");
                 flag = DateTime.TryParse(Console.ReadLine(), out dCriacao);
             } while (flag != true);
+
             if (Validacoes.CalculaCriacao(dCriacao))
             {
-                Fornecedor fornecedor = RegistrarFornecedor(dCriacao);
-                write.GravarNovoFornecedor(fornecedor);
+                RegistrarFornecedor(dCriacao);
             }
             else
             {
@@ -193,11 +184,14 @@ namespace CadastrosBasicos
             }
         }
 
-        public static Fornecedor RegistrarFornecedor(DateTime dFundacao)
+        public static void RegistrarFornecedor(DateTime dFundacao)
         {
             string rSocial = "", cnpj = "";
             Read read = new Read();
             char situacao;
+
+            BDCadastro bd = new();
+
             do
             {
                 Console.Write("CNPJ: ");
@@ -205,29 +199,36 @@ namespace CadastrosBasicos
                 cnpj = cnpj.Trim();
                 cnpj = cnpj.Replace(".", "").Replace("-", "").Replace("/", "");
             } while (Validacoes.ValidarCnpj(cnpj) == false);
-            Fornecedor f = read.ProcurarFornecedor(cnpj);
+
+            Fornecedor f = bd.LocalizarFornecedor(cnpj);
+
             if (f == null)
             {
                 Console.Write("Razao social: ");
                 rSocial = Console.ReadLine().Trim().PadLeft(50, ' ');
                 Console.Write("Situacao (A - Ativo/ I - Inativo): ");
                 situacao = char.Parse(Console.ReadLine());
+
+                bd.GravarFornecedor(new Fornecedor(cnpj, rSocial, dFundacao, situacao));
+
+                Console.WriteLine("Fornecedor cadastrado com sucesso!!");
+                Console.ReadKey();
             }
             else
             {
                 Console.WriteLine("Fornecedor ja cadastrado");
                 Console.WriteLine("Pressione enter para continuar");
                 Console.ReadKey();
-                return f;
-            }
-            return new Fornecedor(cnpj, rSocial, dFundacao, situacao);
-
+            }      
         }
-        public static Cliente RegistrarCliente(DateTime dNascimento)
+
+        public static void RegistrarCliente(DateTime dNascimento)
         {
             string cpf = "", nome = "";
-            Read read = new Read();
             char situacao, sexo;
+
+            BDCadastro bd = new();
+
             do
             {
                 Console.Write("CPF: ");
@@ -236,7 +237,8 @@ namespace CadastrosBasicos
                 cpf = cpf.Replace(".", "").Replace("-", "");
 
             } while (Validacoes.ValidarCpf(cpf) == false);
-            Cliente c = read.ProcuraCliente(cpf);
+
+            Cliente c = bd.LocalizarCliente(cpf);
 
             if (c == null)
             {
@@ -246,22 +248,17 @@ namespace CadastrosBasicos
                 sexo = char.Parse(Console.ReadLine());
                 Console.Write("Situacao (A - Ativo/ I - Inativo): ");
                 situacao = char.Parse(Console.ReadLine());
-                write.GravarNovoCliente(new Cliente(cpf, nome, dNascimento, sexo, situacao));
+
+                bd.GravarCliente(new Cliente(cpf, nome, dNascimento, sexo, situacao));
+
+                Console.WriteLine("Cliente cadastrado com sucesso!!");
+                Console.ReadKey();
             }
             else
             {
                 Console.WriteLine("Cliente ja cadastrado!!");
                 Console.ReadKey();
-                return c;
             }
-            return null;
-        }
-        public void EscreverArquivo(Cliente cliente)
-        {
-            Write write = new Write();
-
-            write.GravarNovoCliente(cliente);
-
         }
     }
 }

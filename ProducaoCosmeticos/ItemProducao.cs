@@ -12,7 +12,7 @@ namespace ProducaoCosmeticos
         public string Id { get; set; }
         public string DataProducao { get; set; }
         public string MateriaPrima { get; set; }
-        public float QuantidadeMateriaPrima { get; set; }
+        public decimal QuantidadeMateriaPrima { get; set; }
 
         #endregion
 
@@ -21,7 +21,7 @@ namespace ProducaoCosmeticos
         public ItemProducao()
         { }
 
-        public ItemProducao(string id, string dataProducao, string materiaPrima, float quantidadeMateriaPrima)
+        public ItemProducao(string id, string dataProducao, string materiaPrima, decimal quantidadeMateriaPrima)
         {
             Id = id;
             DataProducao = dataProducao;
